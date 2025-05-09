@@ -13,20 +13,34 @@ import kotlinx.serialization.Serializable
 
 //CRUD empleado
 @Serializable
+data class Departamento(
+    val id: Int,
+    val nombre: String
+)
+
+//CRUD entidad relacionada
+@Serializable
 data class Empleado(
     val id: Int,
     val nombre: String,
     val cargo: String,
+    val salario: Double,
     val departamentoId: Int
 )
 
-val empleados = mutableListOf(
-    Empleado(id = 1, nombre = "Ana Torres", cargo = "Ingeniera de Software", departamentoId = 2),
-    Empleado(id = 2, nombre = "Carlos Pérez", cargo = "Analista de Datos",departamentoId = 2),
-    Empleado(id = 3, nombre = "Lucía Gómez", cargo = "Diseñadora UX", departamentoId = 3)
+val departamentos = listOf(
+    Departamento(1, "Recursos Humanos"),
+    Departamento(2, "Ingeniería"),
+    Departamento(3, "Diseño")
 )
 
-//Contadpr para asignar id a nuevos empleados
+val empleados = mutableListOf(
+    Empleado(id = 1, nombre = "Ana Torres", cargo = "Ingeniera de Software", salario = 3500.0, departamentoId = 2),
+    Empleado(id = 2, nombre = "Carlos Pérez", cargo = "Analista de Datos", salario = 3200.0, departamentoId = 2),
+    Empleado(id = 3, nombre = "Lucía Gómez", cargo = "Diseñadora UX", salario = 3000.0, departamentoId = 3)
+)
+
+//Contador para asignar id a nuevos empleados
 var empleadoIdCounter = 4
 
 fun main() {
@@ -90,6 +104,27 @@ fun Application.module() {
                 call.respond(HttpStatusCode.NotFound, "Empleado no encontrado")
             }
         }
+
+        //filtrar empleados por departamento
+        get("/empleados/departamento/{id}") {
+            val id = call.parameters["id"]?.toInt()
+            val empleadosFiltrados = empleados.filter { it.departamentoId == id }
+            call.respond(empleadosFiltrados)
+        }
+
+        //filtrar empleados por cargo
+        get("/empleados/cargo/{cargo}") {
+            val cargo = call.parameters["cargo"]
+            val empleadosFiltrados = empleados.filter {
+                it.cargo.equals(cargo, ignoreCase = true)
+            }
+            call.respond(empleadosFiltrados)
+        }
+
+        //mostrar todos los departamentos
+        get("/departamentos") {
+            call.respond(departamentos)
+        }
     }
 }
 
@@ -98,4 +133,5 @@ fun Application.configureSerialization() {
         json()
     }
 }
+
 
